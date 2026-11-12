@@ -1,0 +1,3 @@
+ID,ModelID,Name,Description,IsHidden,IsPrivate,DataCategory,LineageTag,SourceExpression
+10,1,Sales,"Gold billing lines from prod_catalog.gold.customer_invoices",FALSE,FALSE,Regular,tbl-sales-01,"SELECT * FROM prod_catalog.gold.customer_invoices"
+20,1,Inventory,"Snapshots from prod_catalog.silver.inventory_snapshots and prod_catalog.gold.po_receipts",FALSE,FALSE,Regular,tbl-inv-02,"SELECT * FROM prod_catalog.silver.inventory_snapshots JOIN prod_catalog.gold.po_receipts"

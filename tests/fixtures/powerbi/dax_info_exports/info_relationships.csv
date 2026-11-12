@@ -1,0 +1,2 @@
+ID,Name,FromTableID,FromTable,FromColumnID,FromColumn,FromCardinality,ToTableID,ToTable,ToColumnID,ToColumn,ToCardinality,IsActive,CrossFilteringBehavior
+501,rel_sales_inventory_sku,10,Sales,102,sku_id,Many,20,Inventory,201,sku_id,One,TRUE,OneDirection

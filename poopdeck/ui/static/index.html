@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Project Poopdeck — Local Command Center</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a href="#main-workspace" class="skip-link">Skip to workspace</a>
+
+  <header class="app-header">
+    <div class="brand-group">
+      <svg class="brand-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+        <circle cx="12" cy="12" r="2.6" fill="currentColor"></circle>
+        <line x1="12" y1="1" x2="12" y2="5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></line>
+        <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></line>
+        <line x1="1" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></line>
+        <line x1="19" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></line>
+        <line x1="4.9" y1="4.9" x2="7.8" y2="7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></line>
+        <line x1="16.2" y1="16.2" x2="19.1" y2="19.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></line>
+        <line x1="19.1" y1="4.9" x2="16.2" y2="7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></line>
+        <line x1="7.8" y1="16.2" x2="4.9" y2="19.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></line>
+      </svg>
+      <div class="brand-titles">
+        <h1>Project Poopdeck <span class="brand-tag">Local Command Center</span></h1>
+        <p class="brand-subtitle">Air-Gapped Discovery, Driver-Tree ROI &amp; Portfolio OS</p>
+      </div>
+    </div>
+
+    <div class="header-telemetry" aria-label="Vault Telemetry">
+      <span id="pill-vault-dir" class="telemetry-pill" title="Active Markdown Vault Directory">Vault: loading...</span>
+      <span id="pill-capacity" class="telemetry-pill">Capacity: -- / 12.0w</span>
+      <span id="pill-staging-count" class="telemetry-pill pill-staging">Staging: 0</span>
+      <span id="pill-open-questions" class="telemetry-pill">Open Qs: 0</span>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" id="btn-refresh-all" class="btn btn-secondary">Refresh Disk</button>
+      <button type="button" id="btn-theme-toggle" class="btn btn-ghost" aria-pressed="false">Light Mode</button>
+    </div>
+  </header>
+
+  <nav class="primary-nav" aria-label="Command Center Sections">
+    <div class="tab-strip" role="tablist" aria-label="Workspace Views">
+      <button type="button" role="tab" id="tab-portfolio" class="nav-tab" aria-selected="true" aria-controls="panel-portfolio" tabindex="0">
+        1. ROI Matrix &amp; Cutline
+      </button>
+      <button type="button" role="tab" id="tab-staging" class="nav-tab" aria-selected="false" aria-controls="panel-staging" tabindex="-1">
+        2. Staging &amp; CFO Gate <span id="tab-badge-staging" class="tab-badge">0</span>
+      </button>
+      <button type="button" role="tab" id="tab-lineage" class="nav-tab" aria-selected="false" aria-controls="panel-lineage" tabindex="-1">
+        3. Lineage Graph
+      </button>
+      <button type="button" role="tab" id="tab-readiness" class="nav-tab" aria-selected="false" aria-controls="panel-readiness" tabindex="-1">
+        4. Day 1–90 &amp; Questions
+      </button>
+      <button type="button" role="tab" id="tab-briefs" class="nav-tab" aria-selected="false" aria-controls="panel-briefs" tabindex="-1">
+        5. Teams &amp; Exec Briefs
+      </button>
+    </div>
+  </nav>
+
+  <div id="toast-live" role="status" aria-live="polite" class="toast-live"></div>
+  <div id="global-error" role="alert" class="error-banner" hidden></div>
+
+  <main id="main-workspace" tabindex="-1" class="workspace-main">
+    <!-- VIEW 1: Value-vs-Effort ROI Bubble Matrix & Boss-Pin Simulator -->
+    <section id="panel-portfolio" role="tabpanel" aria-labelledby="tab-portfolio" class="view-panel">
+      <div class="toolbar-card">
+        <div class="control-group">
+          <label for="capacity-input">Quarterly Capacity (person-weeks)</label>
+          <div class="slider-pair">
+            <input type="range" id="capacity-slider" min="1" max="52" step="0.5" value="12" aria-label="Quarterly capacity slider">
+            <input type="number" id="capacity-input" min="0.5" max="104" step="0.5" value="12.0">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="domain-filter">Domain Pack Lens</label>
+          <select id="domain-filter">
+            <option value="all">All Domains</option>
+            <option value="ops_supply_chain">ops_supply_chain</option>
+            <option value="retail_cpg">retail_cpg</option>
+            <option value="finance_risk">finance_risk</option>
+            <option value="b2b_saas">b2b_saas</option>
+            <option value="manufacturing">manufacturing</option>
+            <option value="generic">generic</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="color-mode-select">Bubble Color Encoding</label>
+          <select id="color-mode-select">
+            <option value="domain">Color by Domain Pack</option>
+            <option value="readiness">Color by Data Readiness (1–5)</option>
+          </select>
+        </div>
+
+        <div class="control-group control-inline">
+          <label class="checkbox-label" for="include-archived-checkbox">
+            <input type="checkbox" id="include-archived-checkbox">
+            <span>Include Archived</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="capacity-card">
+        <div class="capacity-header">
+          <div>
+            <h2 class="section-title">Quarterly Person-Week Cutline &amp; Boss-Mandate Simulator</h2>
+            <p id="cap-metrics-summary" class="muted-text">Loading quarterly schedule...</p>
+          </div>
+          <div class="capacity-legend">
+            <span class="legend-chip chip-mandate">P0 Boss Mandate</span>
+            <span class="legend-chip chip-funded">Funded ROI</span>
+            <span class="legend-chip chip-remaining">Available</span>
+          </div>
+        </div>
+
+        <div id="capacity-bar" class="capacity-bar-track" role="img" aria-label="Quarterly capacity allocation bar">
+          <div id="seg-mandate" class="cap-seg seg-mandate"></div>
+          <div id="seg-funded" class="cap-seg seg-funded"></div>
+          <div id="seg-remaining" class="cap-seg seg-remaining"></div>
+          <div id="cutline-marker" class="cutline-marker" title="Quarterly Capacity Cutline">
+            <span class="cutline-label">Cutline</span>
+          </div>
+        </div>
+
+        <div id="displacement-callout" class="callout-banner callout-displaced" hidden>
+          <div class="callout-header">
+            <strong id="displacement-heading">Tradeoff Alert: ROI-Funded Work Displaced Past Quarterly Cutline</strong>
+            <div class="callout-actions">
+              <button type="button" id="btn-copy-tradeoff" class="btn btn-small">Copy 1:1 Tradeoff Summary</button>
+              <span id="copy-tradeoff-status" class="copy-feedback" aria-hidden="true"></span>
+            </div>
+          </div>
+          <ul id="displacement-list" class="displacement-list"></ul>
+        </div>
+      </div>
+
+      <div class="matrix-layout">
+        <div class="svg-card">
+          <div class="card-header-row">
+            <h2 class="section-title">Value-vs-Effort ROI Bubble Matrix</h2>
+            <span class="muted-text">Whiskers = Low–High USD | Size = Confidence | Crimson Ring = P0 Mandate</span>
+          </div>
+          <div class="svg-scroll-frame">
+            <svg id="roi-matrix-svg" viewBox="0 0 860 440" role="img" aria-labelledby="roi-svg-title">
+              <title id="roi-svg-title">Value versus Effort ROI Bubble Matrix</title>
+            </svg>
+          </div>
+          <div id="matrix-legend" class="chart-legend"></div>
+        </div>
+
+        <aside id="opp-drawer" class="inspector-card" aria-label="Opportunity Detail and Boss-Pin Drawer">
+          <p class="muted-text">Select any bubble or table row to inspect its auditable Driver-Tree formula, stakeholder verification prompts, and P0 Boss-Mandate override.</p>
+        </aside>
+      </div>
+
+      <div class="section-card">
+        <div class="card-header-row">
+          <h2 class="section-title">Ranked Portfolio Schedule &amp; 1-Click Boss-Pin Controls</h2>
+          <span id="portfolio-warnings" class="warning-inline"></span>
+        </div>
+        <div class="table-wrapper" tabindex="0" role="region" aria-label="Ranked Portfolio Capacity Schedule">
+          <table class="data-table" id="portfolio-table">
+            <thead>
+              <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">Base Rank</th>
+                <th scope="col">ID &amp; Title</th>
+                <th scope="col">Status</th>
+                <th scope="col">Domain</th>
+                <th scope="col">Effort</th>
+                <th scope="col">Cum. Effort</th>
+                <th scope="col">Base Benefit (Low–High)</th>
+                <th scope="col">Confidence</th>
+                <th scope="col">Score</th>
+                <th scope="col">Cutline State</th>
+                <th scope="col">Boss Mandate</th>
+              </tr>
+            </thead>
+            <tbody id="portfolio-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Staging Gate & Skeptical CFO Review Inbox -->
+    <section id="panel-staging" role="tabpanel" aria-labelledby="tab-staging" class="view-panel" hidden>
+      <div class="toolbar-card">
+        <div>
+          <h2 class="section-title">Staging Gate &amp; Skeptical CFO Red-Team Inbox</h2>
+          <p class="muted-text">Review candidate specs in <code>vault/staging/opportunities/</code> before promoting to active portfolio backlog. Protected <code>HUMAN-NOTES</code> blocks are preserved byte-for-byte.</p>
+        </div>
+        <span id="staging-summary-pill" class="badge badge-staging">0 Staged Candidates</span>
+      </div>
+
+      <div class="staging-split">
+        <div id="staging-queue" class="queue-column" role="region" aria-label="Staged Opportunity Queue"></div>
+        <div id="staging-inspector" class="inspector-card" role="region" aria-label="Staged Opportunity CFO Inspector"></div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: Interactive Dataset -> Opportunity -> Power BI Lineage Graph -->
+    <section id="panel-lineage" role="tabpanel" aria-labelledby="tab-lineage" class="view-panel" hidden>
+      <div class="toolbar-card">
+        <div class="control-group control-inline">
+          <label class="checkbox-label" for="lineage-include-staging">
+            <input type="checkbox" id="lineage-include-staging" checked>
+            <span>Include Staged Opportunities</span>
+          </label>
+        </div>
+
+        <div class="control-group">
+          <label for="lineage-filter-select">Focus Node / Power BI Report</label>
+          <select id="lineage-filter-select">
+            <option value="">Show Full Vault Lineage</option>
+          </select>
+        </div>
+
+        <div class="control-group control-inline">
+          <button type="button" id="btn-lineage-reset" class="btn btn-secondary">Clear Highlight</button>
+        </div>
+
+        <div id="lineage-summary-pills" class="lineage-pills"></div>
+      </div>
+
+      <div class="lineage-layout">
+        <div class="svg-card lineage-canvas-wrap">
+          <div class="card-header-row">
+            <h2 class="section-title">End-to-End External &amp; Lakehouse Dataset → DS Opportunity → Power BI Lineage</h2>
+            <span class="muted-text">Click any Power BI report or node to highlight connected opportunities, upstream tables &amp; owners</span>
+          </div>
+          <div class="lineage-scroll">
+            <svg id="lineage-svg" viewBox="0 0 1120 460" role="img" aria-labelledby="lineage-svg-title">
+              <title id="lineage-svg-title">Interactive Dataset to Opportunity to Power BI Lineage Graph</title>
+            </svg>
+          </div>
+        </div>
+
+        <aside id="lineage-detail" class="inspector-card" aria-label="Lineage Node Detail Inspector">
+          <p class="muted-text">Click any node in the lineage graph—especially an Existing Power BI Report—to inspect every DS opportunity upgrading it, upstream Lakehouse tables, and business owners.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- VIEW 4: Day 1-90 Playbook Readiness & Open Questions Tracker -->
+    <section id="panel-readiness" role="tabpanel" aria-labelledby="tab-readiness" class="view-panel" hidden>
+      <div class="readiness-kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Day 1–90 Playbook Progress</span>
+            <strong id="kpi-playbook-pct">0%</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="playbook-progress-bar" class="progress-fill fill-accent"></div>
+          </div>
+          <span id="kpi-playbook-sub" class="muted-text">0 of 5 phases completed</span>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Week 1–2 Discovery Questions Answered</span>
+            <strong id="kpi-questions-pct">0%</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="question-progress-bar" class="progress-fill fill-funded"></div>
+          </div>
+          <span id="kpi-questions-sub" class="muted-text">0 answered | 0 open | 0 blocked</span>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Composite Onboarding Readiness</span>
+            <strong id="kpi-overall-pct">0%</strong>
+          </div>
+          <div id="readiness-category-pills" class="pill-wrap"></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2 class="section-title">Day 1–90 Execution Playbook Milestones</h2>
+        <div id="playbook-grid" class="playbook-grid"></div>
+      </div>
+
+      <div class="section-card">
+        <div class="toolbar-inline">
+          <div>
+            <h2 class="section-title">Week 1–2 Discovery Questionnaire</h2>
+            <p class="muted-text">Updates persist directly to <code>vault/questions/open-questions.md</code> while preserving <code>HUMAN-NOTES</code>.</p>
+          </div>
+
+          <div class="filter-cluster">
+            <div class="control-group">
+              <label for="q-category-filter">Category / Who to Ask</label>
+              <select id="q-category-filter">
+                <option value="all">All Categories</option>
+                <option value="manager">Hiring Manager</option>
+                <option value="it_security">IT / Security</option>
+                <option value="data_engineering">Data Engineering</option>
+                <option value="power_bi">Power BI Owners</option>
+                <option value="business_finance">Business &amp; Finance</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="q-status-filter">Status</label>
+              <select id="q-status-filter">
+                <option value="all">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="answered">Answered</option>
+                <option value="blocked">Blocked</option>
+              </select>
+            </div>
+
+            <div class="control-group control-inline">
+              <button type="button" id="btn-copy-category-questions" class="btn btn-primary">Copy Unanswered Questions</button>
+              <span id="copy-questions-status" class="copy-feedback" aria-hidden="true"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="questions-list" class="questions-list"></div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: 1-Click Microsoft Teams / Exec Pitch / Stakeholder VERIFY Brief Exporter -->
+    <section id="panel-briefs" role="tabpanel" aria-labelledby="tab-briefs" class="view-panel" hidden>
+      <div class="toolbar-card">
+        <div class="control-group">
+          <label for="brief-type-select">Brief Type</label>
+          <select id="brief-type-select">
+            <option value="opportunity">1-Page Opportunity Pitch</option>
+            <option value="weekly_status">Weekly Portfolio &amp; Cutline Status</option>
+            <option value="verify_questions">Stakeholder [VERIFY] Question Bundle</option>
+          </select>
+        </div>
+
+        <div class="control-group" id="brief-opp-group">
+          <label for="brief-opp-select">Target Opportunity</label>
+          <select id="brief-opp-select"></select>
+        </div>
+
+        <div class="control-group" id="brief-format-group">
+          <label for="brief-format-select">Output Mode</label>
+          <select id="brief-format-select">
+            <option value="teams">Microsoft Teams Compact</option>
+            <option value="exec">Executive 1-Pager</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="brief-capacity-input">Capacity (weeks)</label>
+          <input type="number" id="brief-capacity-input" min="0.5" max="104" step="0.5" value="12.0">
+        </div>
+
+        <div class="control-group control-inline">
+          <label class="checkbox-label" for="brief-save-checkbox">
+            <input type="checkbox" id="brief-save-checkbox">
+            <span>Save to <code>exports/</code></span>
+          </label>
+        </div>
+
+        <div class="control-group control-inline">
+          <button type="button" id="btn-generate-brief" class="btn btn-primary">Generate Brief</button>
+          <button type="button" id="btn-copy-brief" class="btn btn-secondary">Copy Markdown</button>
+          <span id="copy-brief-status" class="copy-feedback" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div id="brief-saved-banner" class="callout-banner callout-saved" hidden></div>
+
+      <div class="brief-layout">
+        <div class="section-card">
+          <div class="card-header-row">
+            <h2 id="brief-preview-title" class="section-title">Formatted Safe Preview</h2>
+            <span id="brief-type-badge" class="badge">teams</span>
+          </div>
+          <div id="brief-rendered-preview" class="md-preview-box"></div>
+        </div>
+
+        <div class="section-card">
+          <div class="card-header-row">
+            <h2 class="section-title">Raw Copy-Paste Markdown</h2>
+            <span class="muted-text">Ready for Microsoft Teams, Email, or Obsidian</span>
+          </div>
+          <pre class="raw-md-box" tabindex="0"><code id="brief-raw-text"></code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

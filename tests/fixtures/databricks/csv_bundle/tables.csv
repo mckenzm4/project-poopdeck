@@ -1,0 +1,4 @@
+﻿fqn,table_catalog,table_schema,table_name,table_type,medallion_layer,grain,join_keys,scheduled_jobs,query_count_30d,comment
+prod_catalog.silver.inventory_snapshots,prod_catalog,silver,inventory_snapshots,MANAGED,silver,"1 row per sku_id x warehouse_id x snapshot_date","sku_id;warehouse_id;snapshot_date","wf_daily_supply_chain_medallion",418,"Daily warehouse balances; sync token dapi0123456789abcdef0123456789abcdef"
+prod_catalog.gold.po_receipts,prod_catalog,gold,po_receipts,MANAGED,gold,"1 row per po_line_id receipt","po_id;sku_id;vendor_id","wf_daily_supply_chain_medallion",312,"Vendor purchase order receipts and lead-time variance history"
+prod_catalog.gold.customer_invoices,prod_catalog,gold,customer_invoices,VIEW,gold,"1 row per invoice_id line","invoice_id;customer_id;sku_id","",527,"Gold billing view with customer PII; contact billing-ops@corp-example.com"

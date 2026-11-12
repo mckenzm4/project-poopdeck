@@ -1,0 +1,322 @@
+# Project Poopdeck — Domain Lenses, DS Archetypes & External Data Catalog
+version: "1.0"
+
+archetypes:
+  - id: "propensity_risk_scoring"
+    title: "Calibrated Propensity & Survival Risk Scoring"
+    ml_framing: "Gradient-boosted binary or time-to-event probability scoring with SHAP drivers written to a daily Gold table."
+    replaces_bi_bottleneck: "Nested DAX SWITCH/IF heuristic risk tiers and uncalibrated point-sum scorecards."
+    canonical_driver_formula: "annual_exposed_volume * addressable_share * expected_reduction_pct * unit_loss_usd"
+    typical_effort_weeks: 3.0
+
+  - id: "quantile_demand_leadtime_forecast"
+    title: "Multi-Horizon Quantile Demand & Lead-Time Forecasting"
+    ml_framing: "Pinball-loss p50/p90 quantile regression incorporating calendar, weather, and macro covariates."
+    replaces_bi_bottleneck: "Naive trailing N-day moving-average DAX measures and static reorder-day rules."
+    canonical_driver_formula: "annual_stockout_or_holding_cost_usd * addressable_share * expected_reduction_pct"
+    typical_effort_weeks: 3.5
+
+  - id: "margin_and_cost_leakage_anomaly"
+    title: "Contextual Margin, Pricing & Spend Leakage Detection"
+    ml_framing: "Conditional residual / isolation anomaly scoring ranking actionable invoice, freight, or discount outliers."
+    replaces_bi_bottleneck: "Static hard-coded percentage threshold alerts and manual Monday Excel filters."
+    canonical_driver_formula: "annual_spend_or_revenue_usd * leakage_rate * recovery_capture_pct"
+    typical_effort_weeks: 2.5
+
+  - id: "constrained_allocation_simulator"
+    title: "Constrained Resource, Inventory & Promo Allocation Simulator"
+    ml_framing: "Response-curve elasticity estimation paired with linear/MIP allocation scenarios published to Power BI what-if parameters."
+    replaces_bi_bottleneck: "Weekly 'Export to Excel' spreadsheet guesswork on budget, safety stock, or markdowns."
+    canonical_driver_formula: "annual_budget_or_inventory_usd * reallocation_efficiency_lift_pct"
+    typical_effort_weeks: 4.5
+
+  - id: "early_warning_sla_intervention"
+    title: "14-Day Early-Warning Operational SLA Triage"
+    ml_framing: "In-flight order/ticket/batch breach probability model surfacing top daily interventions inside operational BI."
+    replaces_bi_bottleneck: "Backward-looking SLA breach scorecards that only report failures after penalties occur."
+    canonical_driver_formula: "annual_sla_penalty_or_churn_usd * actionable_capacity_share * save_rate_pct"
+    typical_effort_weeks: 3.0
+
+domain_lenses:
+  generic:
+    slug: "generic"
+    title: "Enterprise Cross-Functional Analytics"
+    description: "Domain-agnostic lens focusing on high-traffic Power BI reports, backward-looking DAX heuristics, and Excel export bottlenecks."
+    typical_kpis:
+      - "Revenue $"
+      - "Gross Margin $"
+      - "Operating Cost Variance $"
+      - "SLA Attainment %"
+      - "Customer Retention %"
+    common_dax_bottlenecks:
+      - "Backward-looking YoY/MoM variance measures with zero forward risk signal"
+      - "Nested SWITCH(TRUE(), ...) rule buckets masquerading as risk scores"
+      - "High weekly Export-to-Excel usage for manual what-if adjustments"
+    opportunity_archetypes:
+      - "propensity_risk_scoring"
+      - "quantile_demand_leadtime_forecast"
+      - "margin_and_cost_leakage_anomaly"
+      - "constrained_allocation_simulator"
+      - "early_warning_sla_intervention"
+    recommended_external_data_ids:
+      - "fred_macro"
+      - "us_census_acs_cbp"
+      - "public_holidays_global"
+      - "noaa_ghcn_daily"
+
+  ops_supply_chain:
+    slug: "ops_supply_chain"
+    title: "Operations, Inventory & Supply Chain"
+    description: "Focuses on OTIF, stockout margin protection, safety-stock optimization, vendor lead-time variability, and freight leakage."
+    typical_kpis:
+      - "OTIF %"
+      - "Fill Rate %"
+      - "Days of Supply (DOS)"
+      - "Stockout Lost Margin $"
+      - "Expedite & Detention Freight $"
+    common_dax_bottlenecks:
+      - "Static Days-of-Supply < 14 reorder alerts ignoring supplier lead-time variance"
+      - "Naive 28/30-day trailing moving-average demand projections"
+      - "Monday morning Excel exports of inventory tables to override reorder points"
+    opportunity_archetypes:
+      - "quantile_demand_leadtime_forecast"
+      - "early_warning_sla_intervention"
+      - "constrained_allocation_simulator"
+      - "margin_and_cost_leakage_anomaly"
+    recommended_external_data_ids:
+      - "noaa_ghcn_daily"
+      - "port_congestion_freight_index"
+      - "public_holidays_global"
+      - "fred_macro"
+      - "commodity_spot_indices"
+
+  retail_cpg:
+    slug: "retail_cpg"
+    title: "Retail, Merchandising & CPG"
+    description: "Focuses on store/SKU sell-through, promotional lift elasticity, markdown timing, and on-shelf availability."
+    typical_kpis:
+      - "Sell-Through %"
+      - "Promo Incremental Lift %"
+      - "Markdown & Spoilage $"
+      - "On-Shelf Availability %"
+      - "Gross Margin Return on Inventory (GMROI)"
+    common_dax_bottlenecks:
+      - "Promo baseline = trailing 4-week non-promo average ignoring cannibalization and weather"
+      - "Manual store cluster tiers hardcoded in DAX SWITCH formulas"
+      - "Flat store-wide safety stock rules causing simultaneous stockouts and clearance markdowns"
+    opportunity_archetypes:
+      - "quantile_demand_leadtime_forecast"
+      - "constrained_allocation_simulator"
+      - "propensity_risk_scoring"
+      - "margin_and_cost_leakage_anomaly"
+    recommended_external_data_ids:
+      - "noaa_ghcn_daily"
+      - "us_census_acs_cbp"
+      - "public_holidays_global"
+      - "nielsen_circana_syndicated"
+      - "fred_macro"
+
+  finance_risk:
+    slug: "finance_risk"
+    title: "Corporate Finance, Credit & Working Capital Risk"
+    description: "Focuses on DSO collections prioritization, bad-debt write-off prevention, cash-flow forecasting, and AP duplicate/leakage recovery."
+    typical_kpis:
+      - "Days Sales Outstanding (DSO)"
+      - "Bad-Debt Write-Off $"
+      - "Net Working Capital $"
+      - "Cash Forecast MAPE %"
+      - "Duplicate / Off-Contract Spend $"
+    common_dax_bottlenecks:
+      - "30/60/90-day AR aging buckets treating loyal late-payers identically to default risks"
+      - "Straight-line run-rate cash projections missing fiscal/holiday payment calendar shifts"
+      - "Static invoice dollar thresholds missing split-PO and price-creep anomalies"
+    opportunity_archetypes:
+      - "propensity_risk_scoring"
+      - "margin_and_cost_leakage_anomaly"
+      - "quantile_demand_leadtime_forecast"
+    recommended_external_data_ids:
+      - "fred_macro"
+      - "dnb_firmographics_credit"
+      - "public_holidays_global"
+      - "us_census_acs_cbp"
+
+  b2b_saas:
+    slug: "b2b_saas"
+    title: "B2B Commercial, Renewals & SaaS Revenue"
+    description: "Focuses on net dollar retention, renewal churn intervention, expansion propensity, and discount leakage."
+    typical_kpis:
+      - "Net Dollar Retention (NDR) %"
+      - "Gross Logo Churn %"
+      - "Pipeline Win Rate %"
+      - "Expansion ARR $"
+      - "Realized Price vs. List Discount %"
+    common_dax_bottlenecks:
+      - "Hand-weighted Customer Health Score DAX sums with arbitrary red/yellow/green cutoffs"
+      - "Static CRM stage win-probability multipliers ignoring deal velocity and usage telemetry"
+      - "Unsegmented discount approval bands eroding deal margin"
+    opportunity_archetypes:
+      - "propensity_risk_scoring"
+      - "margin_and_cost_leakage_anomaly"
+      - "early_warning_sla_intervention"
+    recommended_external_data_ids:
+      - "dnb_firmographics_credit"
+      - "fred_macro"
+      - "us_census_acs_cbp"
+      - "public_holidays_global"
+
+  manufacturing:
+    slug: "manufacturing"
+    title: "Manufacturing, Quality & Asset Reliability"
+    description: "Focuses on OEE availability, unplanned line downtime, scrap/yield excursion root causes, and energy/raw-material cost variance."
+    typical_kpis:
+      - "Overall Equipment Effectiveness (OEE) %"
+      - "Unplanned Downtime Hours"
+      - "Scrap & Rework Cost $"
+      - "Mean Time Between Failures (MTBF)"
+      - "First-Pass Yield %"
+    common_dax_bottlenecks:
+      - "Single-tag static sensor high/low alarms generating high false-positive fatigue"
+      - "Fixed calendar preventive maintenance intervals ignoring cumulative cycle stress and ambient heat/humidity"
+      - "Post-mortem pareto charts of scrap after batch completion"
+    opportunity_archetypes:
+      - "early_warning_sla_intervention"
+      - "propensity_risk_scoring"
+      - "margin_and_cost_leakage_anomaly"
+      - "quantile_demand_leadtime_forecast"
+    recommended_external_data_ids:
+      - "noaa_ghcn_daily"
+      - "commodity_spot_indices"
+      - "fred_macro"
+      - "public_holidays_global"
+
+external_datasets:
+  - id: "fred_macro"
+    source: "FRED Macroeconomic Series (CPI, Industrial Production, Interest Rates, Freight TSI)"
+    provider: "Federal Reserve Bank of St. Louis (FRED)"
+    category: "macroeconomics"
+    acquisition: "free_public_api"
+    blocker_severity: "low"
+    purpose: "Normalize demand, pricing power, credit delinquency, and freight cost baselines against macro regime shifts."
+    join_keys_hint:
+      - "year_month"
+      - "week_start_date"
+    applicable_domains:
+      - "generic"
+      - "ops_supply_chain"
+      - "retail_cpg"
+      - "finance_risk"
+      - "b2b_saas"
+      - "manufacturing"
+
+  - id: "us_census_acs_cbp"
+    source: "US Census Bureau ACS Demographics & County Business Patterns"
+    provider: "US Census Bureau"
+    category: "demographics_firmographics"
+    acquisition: "free_public_api"
+    blocker_severity: "low"
+    purpose: "Enrich ZIP/FIPS territories, store catchments, and regional account density without exposing customer PII."
+    join_keys_hint:
+      - "zip_code_3"
+      - "zip_code_5"
+      - "county_fips"
+      - "state_code"
+    applicable_domains:
+      - "generic"
+      - "retail_cpg"
+      - "finance_risk"
+      - "b2b_saas"
+
+  - id: "noaa_ghcn_daily"
+    source: "NOAA GHCN Daily Weather, Heating/Cooling Degree Days & Storm Extremes"
+    provider: "NOAA National Centers for Environmental Information"
+    category: "weather_climate"
+    acquisition: "free_public_api"
+    blocker_severity: "low"
+    purpose: "Capture severe weather transit delays, seasonal demand spikes, and ambient plant temperature/humidity effects."
+    join_keys_hint:
+      - "event_date"
+      - "zip_code_3"
+      - "station_region"
+    applicable_domains:
+      - "generic"
+      - "ops_supply_chain"
+      - "retail_cpg"
+      - "manufacturing"
+
+  - id: "public_holidays_global"
+    source: "Public Holidays, School Breaks & Fiscal Trading Calendars"
+    provider: "Python holidays / Nager.Date (Offline Static Table)"
+    category: "calendar_events"
+    acquisition: "free_public_api"
+    blocker_severity: "low"
+    purpose: "Account for holiday demand pull-forward, plant/port closures, and AP/AR banking settlement shifts."
+    join_keys_hint:
+      - "calendar_date"
+      - "country_code"
+      - "region_code"
+    applicable_domains:
+      - "generic"
+      - "ops_supply_chain"
+      - "retail_cpg"
+      - "finance_risk"
+      - "b2b_saas"
+      - "manufacturing"
+
+  - id: "port_congestion_freight_index"
+    source: "Global Port Congestion, Dwell Time & Container Freight Index"
+    provider: "UNCTAD / BTS / Public Maritime Benchmarks"
+    category: "supply_chain_logistics"
+    acquisition: "free_public_api"
+    blocker_severity: "low"
+    purpose: "Improve import supplier lead-time p90 quantile predictions and inbound safety-stock buffers."
+    join_keys_hint:
+      - "week_start_date"
+      - "origin_port_code"
+      - "dest_port_code"
+    applicable_domains:
+      - "ops_supply_chain"
+      - "retail_cpg"
+      - "manufacturing"
+
+  - id: "commodity_spot_indices"
+    source: "Industrial Metals, Diesel/Energy & Agricultural Commodity Spot Indices"
+    provider: "U.S. EIA / World Bank Commodity Markets"
+    category: "commodities_energy"
+    acquisition: "free_public_api"
+    blocker_severity: "low"
+    purpose: "Benchmark supplier cost-pass-through claims, fuel surcharges, and raw-material margin variance."
+    join_keys_hint:
+      - "year_month"
+      - "commodity_code"
+    applicable_domains:
+      - "ops_supply_chain"
+      - "manufacturing"
+      - "retail_cpg"
+
+  - id: "nielsen_circana_syndicated"
+    source: "NielsenIQ / Circana Syndicated Category POS & Competitor Promo Share"
+    provider: "NielsenIQ / Circana"
+    category: "syndicated_market_share"
+    acquisition: "existing_vendor"
+    blocker_severity: "medium"
+    purpose: "Separate true category demand contraction from competitor promotional share loss."
+    join_keys_hint:
+      - "week_ending_date"
+      - "category_code"
+      - "market_region"
+    applicable_domains:
+      - "retail_cpg"
+
+  - id: "dnb_firmographics_credit"
+    source: "Dun & Bradstreet (D&B) B2B Firmographics, PAYDEX & Delinquency Scores"
+    provider: "Dun & Bradstreet"
+    category: "commercial_credit_b2b"
+    acquisition: "net_new_budget"
+    blocker_severity: "high"
+    purpose: "Augment internal AR aging and SaaS usage signals with external commercial credit stress and parent-hierarchy linkages."
+    join_keys_hint:
+      - "duns_number"
+      - "company_domain"
+    applicable_domains:
+      - "finance_risk"
+      - "b2b_saas"

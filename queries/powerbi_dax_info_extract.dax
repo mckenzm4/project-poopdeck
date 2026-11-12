@@ -1,0 +1,33 @@
+// ============================================================================
+// Project Poopdeck — Zero-Admin Power BI Semantic Model Extractor (Tier 2)
+// ============================================================================
+// Usage (Zero Fabric / Tenant Admin Rights Required):
+//   1. Open the target report or semantic model in Power BI Desktop.
+//   2. Switch to "DAX Query View" (left-hand rail in Power BI Desktop).
+//   3. Run each EVALUATE block below (or run all 4 tabs) and click "Copy" ->
+//      save as UTF-8 CSV or JSON into `vault/inbox/powerbi/<report_slug>/`:
+//        - info_tables.csv        (from Query 1: INFO.TABLES())
+//        - info_columns.csv       (from Query 2: INFO.COLUMNS())
+//        - info_measures.csv      (from Query 3: INFO.MEASURES())
+//        - info_relationships.csv (from Query 4: INFO.RELATIONSHIPS())
+//   4. Run: `poopdeck sync powerbi --mode tier2`
+//      Poopdeck extracts tables, columns, relationships, and DAX expressions,
+//      redacts embedded credentials/PII, and flags heuristic / backward-looking
+//      measures as BI-to-DS replacement candidates.
+// ============================================================================
+
+// Query 1 — Semantic Model Tables & Storage Modes
+EVALUATE
+INFO.TABLES()
+
+// Query 2 — Table Columns, Data Types & Source Mappings
+EVALUATE
+INFO.COLUMNS()
+
+// Query 3 — DAX Measures, Expressions & Descriptions
+EVALUATE
+INFO.MEASURES()
+
+// Query 4 — Table Relationships, Cardinality & Cross-Filter Directions
+EVALUATE
+INFO.RELATIONSHIPS()

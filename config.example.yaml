@@ -1,0 +1,66 @@
+# Project Poopdeck — Starter Configuration Template
+# Copy to `config.yaml` (gitignored) on your corporate laptop for local customization.
+
+project_name: "project-poopdeck"
+vault_path: "vault"
+domain: "ops_supply_chain"          # generic | ops_supply_chain | retail_cpg | finance_risk | b2b_saas | manufacturing
+quarterly_capacity_weeks: 12.0      # Solo DS person-weeks per quarter
+
+privacy:
+  privacy_mode: "safe_aggregates"   # safe_aggregates (default: 0 sample rows) | scrubbed_samples
+  allow_sample_rows: false          # Explicit opt-in switch (also accepts alias `include_sample_rows`)
+  max_sample_rows: 5
+  pii_column_patterns:
+    - '(?:^|[_.\s-])e[-_]?mails?(?:$|[_.\s-])'
+    - '(?:^|[_.\s-])(?:ssn|social[_.\s-]?security(?:[_.\s-]?(?:number|num|no))?|tax[_.\s-]?id|national[_.\s-]?id|passport(?:[_.\s-]?(?:number|num|no))?|driver[_.\s-]?licen[sc]e)(?:$|[_.\s-])'
+    - '(?:^|[_.\s-])(?:phone|phone[_.\s-]?(?:number|num|no|ext)|telephone|mobile|mobile[_.\s-]?(?:number|num|no|phone)|cell[_.\s-]?phone|fax|fax[_.\s-]?(?:number|num|no))(?:$|[_.\s-])'
+    - '(?:^|[_.\s-])(?:dob|birth[_.\s-]?date|date[_.\s-]?of[_.\s-]?birth|birth[_.\s-]?day)(?:$|[_.\s-])'
+    - '(?:^|[_.\s-])(?:salary|salaries|compensation|wage|wages|pay[_.\s-]?rate|bonus)(?:$|[_.\s-])'
+    - '(?:^|[_.\s-])(?:address|addresses|street|street[_.\s-]?(?:line|num|number|1|2)?|apt[_.\s-]?no|zip|zip[_.\s-]?code|postal|postal[_.\s-]?code|post[_.\s-]?code)(?:$|[_.\s-])'
+    - '(?:^|[_.\s-])(?:(?:first|last|middle|full|given|family|maiden|sur|nick|preferred|legal|user|login|customer|client|buyer|shopper|consumer|employees?|emp|staff|worker|personnel|manager|supervisor|person|personal|individual|contact|patient|member|subscriber|applicant|candidate|beneficiary|dependent|spouse|insured|policyholder|account[_.\s-]?holder|card[_.\s-]?holder|owner|author|speaker|attendee|recipient|sender|rep|sales[_.\s-]?rep|agent|driver|passenger)[_.\s-]?names?|name[_.\s-]?(?:first|last|middle|full))(?:$|[_.\s-])'
+    - '^name$'
+  redact_secrets: true
+
+databricks:
+  mode: "auto"                      # auto | tier1 | tier2 (also accepts tier1_sdk | tier2_bundle)
+  host: ""
+  warehouse_id: ""
+  catalogs_include:
+    - "*"
+  catalogs_exclude:
+    - "samples"
+    - "system"
+    - "hive_metastore_scratch"
+  lineage_lookback_days: 30
+  bundle_path: "vault/inbox/databricks"
+
+powerbi:
+  mode: "auto"                      # auto | tier1 | tier2 (also accepts tier1_rest | tier2_local)
+  use_az_cli_token: true
+  workspaces_include:
+    - "*"
+  local_exports_path: "vault/inbox/powerbi"
+
+teams:
+  inbox_path: "vault/inbox"
+  archive_processed: true
+
+scoring_weights:
+  roi_weight: 0.40
+  data_readiness_weight: 0.25
+  bi_adoption_ease_weight: 0.20
+  speed_to_value_weight: 0.15
+  existing_pbi_bonus_points: 10.0
+  roi_cap_usd: 1000000.0
+  confidence_multipliers:
+    hypothesis: 0.60
+    directional: 0.85
+    finance_verified: 1.00
+
+dlp:
+  corporate_remote_patterns: []
+  external_remote_patterns:
+    - "mckenzm4"
+    - "github.com"
+    - "gitlab.com"
+    - "bitbucket.org"

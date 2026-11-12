@@ -1,0 +1,29 @@
+WEBVTT
+
+1
+00:00:02.100 --> 00:00:09.450
+<v Sarah Chen>Morning team. Sarah Chen here, Inventory Planning Lead in Supply Chain, kicking off our weekly operations sync.</v>
+
+2
+00:00:09.800 --> 00:00:19.200
+<v Sarah Chen>Our primary KPIs this quarter are OTIF, Days of Supply, and Lost Margin. Right now OTIF is stuck at 91.4% and stockouts are hurting key regional lanes.</v>
+
+3
+00:00:19.750 --> 00:00:31.600
+<v Marcus Vance>Thanks Sarah. As VP of Operations, I need to flag an urgent top-down priority first. Boss mandate: the COO promised the board an automated Weekly Executive Service-Level & Expedite Freight Tracker before month-end—treat this as a P0 boss mandate for Q1.</v>
+
+4
+00:00:32.100 --> 00:00:44.900
+<v Sarah Chen>Understood, Marcus. On the buyer side, our biggest pain point in [[Supply Chain Workspace__Daily Buyer Workbench]] (Daily Buyer Workbench) is the static 14-day reorder DAX rule. Every Monday buyers export that visual to Excel because prod_catalog.silver.inventory_snapshots has intraday duplicate snapshots and ignores vendor lead-time spikes.</v>
+
+5
+00:00:45.300 --> 00:00:56.850
+<v Sarah Chen>Explicit ask: once the boss mandate is scoped, can Data Science publish a 14-day stockout probability and recommended reorder quantity from [[prod_catalog.silver.inventory_snapshots]] and [[prod_catalog.gold.po_receipts]] directly into Daily Buyer Workbench?</v>
+
+6
+00:00:57.400 --> 00:01:09.150
+<v Marcus Vance>Agreed. Glossary note so everyone aligns: OTIF means On-Time In-Full order line delivery against promised date, and Days of Supply is current on-hand units divided by trailing 14-day daily shipments. Open question: do we have clean SCD Type 2 history in prod_catalog.silver.inventory_snapshots without overwrite leakage?</v>
+
+7
+00:01:09.600 --> 00:01:22.000
+<v Sarah Chen>For pipeline alerts or follow-ups, email me at sarah.chen@corp-example.com or call my mobile at (555) 867-5309. Also, heads-up for Security: we spotted unmasked vendor tax SSN 123-45-6789 in a raw bronze CSV and a hardcoded Databricks PAT dapi0123456789abcdef0123456789abcdef in an old legacy notebook—make sure Poopdeck redacts both.</v>

@@ -1,0 +1,105 @@
+{
+  "workspace": "Supply Chain Workspace",
+  "report_name": "Lost Sales Summary",
+  "semantic_model": "Lost Sales Summary",
+  "owners": ["Sarah Chen"],
+  "tables": [
+    {
+      "ID": 10,
+      "ModelID": 1,
+      "Name": "Sales",
+      "Description": "Gold billing lines from prod_catalog.gold.customer_invoices",
+      "IsHidden": false,
+      "SourceExpression": "SELECT * FROM prod_catalog.gold.customer_invoices"
+    },
+    {
+      "ID": 20,
+      "ModelID": 1,
+      "Name": "Inventory",
+      "Description": "Snapshots from prod_catalog.silver.inventory_snapshots and prod_catalog.gold.po_receipts",
+      "IsHidden": false,
+      "SourceExpression": "SELECT * FROM prod_catalog.silver.inventory_snapshots JOIN prod_catalog.gold.po_receipts"
+    }
+  ],
+  "columns": [
+    {"ID": 101, "TableID": 10, "TableName": "Sales", "Name": "invoice_id", "ExplicitName": "invoice_id", "DataType": "String", "SourceColumn": "invoice_id"},
+    {"ID": 102, "TableID": 10, "TableName": "Sales", "Name": "sku_id", "ExplicitName": "sku_id", "DataType": "String", "SourceColumn": "sku_id"},
+    {"ID": 103, "TableID": 10, "TableName": "Sales", "Name": "invoice_date", "ExplicitName": "invoice_date", "DataType": "DateTime", "SourceColumn": "invoice_date"},
+    {"ID": 104, "TableID": 10, "TableName": "Sales", "Name": "net_amount_usd", "ExplicitName": "net_amount_usd", "DataType": "Double", "SourceColumn": "net_amount_usd"},
+    {"ID": 105, "TableID": 10, "TableName": "Sales", "Name": "lost_margin_usd", "ExplicitName": "lost_margin_usd", "DataType": "Double", "SourceColumn": "lost_margin_usd"},
+    {"ID": 106, "TableID": 10, "TableName": "Sales", "Name": "order_qty", "ExplicitName": "order_qty", "DataType": "Int64", "SourceColumn": "order_qty"},
+    {"ID": 201, "TableID": 20, "TableName": "Inventory", "Name": "sku_id", "ExplicitName": "sku_id", "DataType": "String", "SourceColumn": "sku_id"},
+    {"ID": 202, "TableID": 20, "TableName": "Inventory", "Name": "warehouse_id", "ExplicitName": "warehouse_id", "DataType": "String", "SourceColumn": "warehouse_id"},
+    {"ID": 203, "TableID": 20, "TableName": "Inventory", "Name": "snapshot_date", "ExplicitName": "snapshot_date", "DataType": "DateTime", "SourceColumn": "snapshot_date"},
+    {"ID": 204, "TableID": 20, "TableName": "Inventory", "Name": "on_hand_qty", "ExplicitName": "on_hand_qty", "DataType": "Double", "SourceColumn": "on_hand_qty"},
+    {"ID": 205, "TableID": 20, "TableName": "Inventory", "Name": "trailing_30d_daily_demand", "ExplicitName": "trailing_30d_daily_demand", "DataType": "Double", "SourceColumn": "trailing_30d_daily_demand"}
+  ],
+  "measures": [
+    {
+      "ID": 301,
+      "TableID": 20,
+      "TableName": "Inventory",
+      "Name": "SKU Stockout Risk Tier",
+      "Expression": "SWITCH(TRUE(), [Days of Supply] < 7, IF(SUM('Inventory'[on_hand_qty]) <= 0, \"P0 Stockout\", IF(AVERAGE('Inventory'[actual_lead_time_days]) > 21, \"P1 Critical\", \"P2 Expedite\")), [Days of Supply] < 14, \"P2 Watchlist\", \"Healthy\")",
+      "Description": "Nested heuristic risk tiering"
+    },
+    {
+      "ID": 302,
+      "TableID": 10,
+      "TableName": "Sales",
+      "Name": "Naive 3M Moving Avg Demand Forecast",
+      "Expression": "AVERAGEX(DATESINPERIOD('Sales'[invoice_date], MAX('Sales'[invoice_date]), -3, MONTH), CALCULATE(SUM('Sales'[order_qty])))",
+      "Description": "Hand-rolled moving average forecast"
+    },
+    {
+      "ID": 303,
+      "TableID": 20,
+      "TableName": "Inventory",
+      "Name": "Static 14-Day Reorder Alert",
+      "Expression": "IF([Days of Supply] < 14 || [Fill Rate Pct] < 0.85, \"ALERT: Reorder Immediately - At Risk\", \"OK\")",
+      "Description": "Buyer alert; legacy JDBC jdbc:databricks://adb-1234567890123456.7.azuredatabricks.net:443/default;PWD=SuperSecretPass123!"
+    },
+    {
+      "ID": 304,
+      "TableID": 10,
+      "TableName": "Sales",
+      "Name": "Prior Year Net Revenue",
+      "Expression": "CALCULATE(SUM('Sales'[net_amount_usd]), SAMEPERIODLASTYEAR('Sales'[invoice_date]))",
+      "Description": "Backward-looking YoY revenue"
+    },
+    {
+      "ID": 305,
+      "TableID": 10,
+      "TableName": "Sales",
+      "Name": "Trailing 12M Lost Margin USD",
+      "Expression": "CALCULATE(SUM('Sales'[lost_margin_usd]), DATEADD('Sales'[invoice_date], -1, YEAR))",
+      "Description": "Backward-looking 12M lost margin"
+    },
+    {
+      "ID": 306,
+      "TableID": 20,
+      "TableName": "Inventory",
+      "Name": "Days of Supply",
+      "Expression": "DIVIDE(SUM('Inventory'[on_hand_qty]), SUM('Inventory'[trailing_30d_daily_demand]), 0)",
+      "Description": "Inventory days of coverage"
+    }
+  ],
+  "relationships": [
+    {
+      "ID": 501,
+      "Name": "rel_sales_inventory_sku",
+      "FromTableID": 10,
+      "FromTable": "Sales",
+      "FromColumnID": 102,
+      "FromColumn": "sku_id",
+      "FromCardinality": "Many",
+      "ToTableID": 20,
+      "ToTable": "Inventory",
+      "ToColumnID": 201,
+      "ToColumn": "sku_id",
+      "ToCardinality": "One",
+      "IsActive": true,
+      "CrossFilteringBehavior": "OneDirection"
+    }
+  ]
+}

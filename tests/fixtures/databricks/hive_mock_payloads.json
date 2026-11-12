@@ -1,0 +1,43 @@
+{
+  "uc_error": {
+    "error_class": "PERMISSION_DENIED",
+    "exception_type": "AnalysisException",
+    "message": "[PERMISSION_DENIED] User does not have USE CATALOG on Catalog 'system' (system.information_schema.tables unavailable)."
+  },
+  "show_databases": [
+    {"databaseName": "default", "namespace": "default"},
+    {"databaseName": "legacy_hive", "namespace": "legacy_hive"}
+  ],
+  "show_tables_by_db": {
+    "legacy_hive": [
+      {"database": "legacy_hive", "tableName": "manual_promo_overrides", "isTemporary": false}
+    ],
+    "default": []
+  },
+  "describe_extended": {
+    "legacy_hive.manual_promo_overrides": [
+      {"col_name": "override_id", "data_type": "string", "comment": "Primary key for promo override"},
+      {"col_name": "sku_id", "data_type": "string", "comment": "SKU identifier joined to inventory"},
+      {"col_name": "buyer_email", "data_type": "string", "comment": "Approving buyer email (PII)"},
+      {"col_name": "promo_lift_pct", "data_type": "double", "comment": "Manual uplift percentage"},
+      {"col_name": "effective_date", "data_type": "date", "comment": "Override start date"},
+      {"col_name": "", "data_type": "", "comment": ""},
+      {"col_name": "# Detailed Table Information", "data_type": "", "comment": ""},
+      {"col_name": "Catalog", "data_type": "hive_metastore", "comment": ""},
+      {"col_name": "Database", "data_type": "legacy_hive", "comment": ""},
+      {"col_name": "Table", "data_type": "manual_promo_overrides", "comment": ""},
+      {"col_name": "Owner", "data_type": "sarah.chen@corp-example.com", "comment": ""},
+      {"col_name": "Type", "data_type": "EXTERNAL", "comment": ""},
+      {"col_name": "Location", "data_type": "abfss://raw@corplake.dfs.core.windows.net/legacy_hive/manual_promo_overrides", "comment": ""},
+      {"col_name": "Comment", "data_type": "Legacy manual Excel promo overrides; token dapi0123456789abcdef0123456789abcdef", "comment": ""}
+    ]
+  },
+  "safe_aggregates": {
+    "legacy_hive.manual_promo_overrides": {
+      "row_count": 1840,
+      "min_timestamp": "2025-06-01T00:00:00Z",
+      "max_timestamp": "2026-11-10T18:00:00Z",
+      "freshness_lag_hours": 14.0
+    }
+  }
+}

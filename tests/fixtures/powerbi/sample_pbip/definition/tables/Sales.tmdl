@@ -1,0 +1,44 @@
+table Sales
+
+	measure 'Naive 3M Moving Avg Demand Forecast' = AVERAGEX(DATESINPERIOD('Sales'[invoice_date], MAX('Sales'[invoice_date]), -3, MONTH), CALCULATE(SUM('Sales'[order_qty])))
+		formatString: #,0.0
+
+	measure 'Prior Year Net Revenue' = CALCULATE(SUM('Sales'[net_amount_usd]), SAMEPERIODLASTYEAR('Sales'[invoice_date]))
+		formatString: $#,0
+
+	measure 'Trailing 12M Lost Margin USD' = CALCULATE(SUM('Sales'[lost_margin_usd]), DATEADD('Sales'[invoice_date], -1, YEAR))
+		formatString: $#,0
+
+	column invoice_id
+		dataType: string
+		sourceColumn: invoice_id
+
+	column sku_id
+		dataType: string
+		sourceColumn: sku_id
+
+	column invoice_date
+		dataType: dateTime
+		sourceColumn: invoice_date
+
+	column net_amount_usd
+		dataType: double
+		sourceColumn: net_amount_usd
+
+	column lost_margin_usd
+		dataType: double
+		sourceColumn: lost_margin_usd
+
+	column order_qty
+		dataType: int64
+		sourceColumn: order_qty
+
+	partition Sales-Partition = m
+		mode: import
+		source =
+			let
+				// Legacy JDBC: jdbc:databricks://adb-1234567890123456.7.azuredatabricks.net:443/default;PWD=SuperSecretPass123! token=dapi0123456789abcdef0123456789abcdef
+				Source = Databricks.Catalogs("adb-1234567890123456.7.azuredatabricks.net", "/sql/1.0/warehouses/ab12cd34ef56", [Catalog="prod_catalog", Database="gold"]),
+				Result = Value.NativeQuery(Source, "SELECT * FROM prod_catalog.gold.customer_invoices")
+			in
+				Result

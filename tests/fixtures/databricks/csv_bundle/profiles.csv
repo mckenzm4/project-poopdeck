@@ -1,0 +1,4 @@
+fqn,table_catalog,table_schema,table_name,row_count,min_timestamp,max_timestamp,freshness_lag_hours,query_count_30d
+prod_catalog.silver.inventory_snapshots,prod_catalog,silver,inventory_snapshots,5183000,2025-11-12T06:00:00Z,2026-11-11T06:00:00Z,2.0,418
+prod_catalog.gold.po_receipts,prod_catalog,gold,po_receipts,31200,2025-11-12T06:15:00Z,2026-11-11T06:15:00Z,1.75,312
+prod_catalog.gold.customer_invoices,prod_catalog,gold,customer_invoices,125400,2025-11-12T00:00:00Z,2026-11-11T04:00:00Z,4.0,527

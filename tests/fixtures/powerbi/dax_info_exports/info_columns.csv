@@ -1,0 +1,12 @@
+ID,TableID,TableName,Name,ExplicitName,InferredName,DataType,ExplicitDataType,IsHidden,IsKey,SourceColumn,Description
+101,10,Sales,invoice_id,invoice_id,,String,String,FALSE,TRUE,invoice_id,"Invoice line ID"
+102,10,Sales,sku_id,sku_id,,String,String,FALSE,FALSE,sku_id,"Product SKU ID"
+103,10,Sales,invoice_date,invoice_date,,DateTime,DateTime,FALSE,FALSE,invoice_date,"Invoice posting date"
+104,10,Sales,net_amount_usd,net_amount_usd,,Double,Double,FALSE,FALSE,net_amount_usd,"Net billed amount USD"
+105,10,Sales,lost_margin_usd,lost_margin_usd,,Double,Double,FALSE,FALSE,lost_margin_usd,"Short-ship lost margin USD"
+106,10,Sales,order_qty,order_qty,,Int64,Int64,FALSE,FALSE,order_qty,"Ordered units"
+201,20,Inventory,sku_id,sku_id,,String,String,FALSE,TRUE,sku_id,"Product SKU ID"
+202,20,Inventory,warehouse_id,warehouse_id,,String,String,FALSE,FALSE,warehouse_id,"Warehouse site ID"
+203,20,Inventory,snapshot_date,snapshot_date,,DateTime,DateTime,FALSE,FALSE,snapshot_date,"Snapshot date"
+204,20,Inventory,on_hand_qty,on_hand_qty,,Double,Double,FALSE,FALSE,on_hand_qty,"Units on hand"
+205,20,Inventory,trailing_30d_daily_demand,trailing_30d_daily_demand,,Double,Double,FALSE,FALSE,trailing_30d_daily_demand,"30d daily demand"

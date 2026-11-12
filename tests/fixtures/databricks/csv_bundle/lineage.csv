@@ -1,0 +1,3 @@
+source_table_full_name,target_table_full_name,source_fqn,target_fqn,entity_type,notebook_path
+prod_catalog.silver.inventory_snapshots,prod_catalog.gold.po_receipts,prod_catalog.silver.inventory_snapshots,prod_catalog.gold.po_receipts,JOB,/Repos/data-eng/pipelines/nb_gold_po_receipts
+prod_catalog.silver.inventory_snapshots,prod_catalog.gold.customer_invoices,prod_catalog.silver.inventory_snapshots,prod_catalog.gold.customer_invoices,VIEW,/Repos/commercial/views/vw_customer_invoices

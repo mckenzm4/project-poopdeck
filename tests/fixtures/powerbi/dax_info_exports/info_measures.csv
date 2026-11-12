@@ -1,0 +1,7 @@
+﻿ID,TableID,TableName,Name,Expression,FormatString,Description,IsHidden,DisplayFolder,LineageTag
+301,20,Inventory,SKU Stockout Risk Tier,"SWITCH(TRUE(), [Days of Supply] < 7, IF(SUM('Inventory'[on_hand_qty]) <= 0, ""P0 Stockout"", IF(AVERAGE('Inventory'[actual_lead_time_days]) > 21, ""P1 Critical"", ""P2 Expedite"")), [Days of Supply] < 14, ""P2 Watchlist"", ""Healthy"")","","Nested heuristic risk tiering",FALSE,Risk,msr-301
+302,10,Sales,Naive 3M Moving Avg Demand Forecast,"AVERAGEX(DATESINPERIOD('Sales'[invoice_date], MAX('Sales'[invoice_date]), -3, MONTH), CALCULATE(SUM('Sales'[order_qty])))","#,0.0","Hand-rolled moving average forecast",FALSE,Forecasting,msr-302
+303,20,Inventory,Static 14-Day Reorder Alert,"IF([Days of Supply] < 14 || [Fill Rate Pct] < 0.85, ""ALERT: Reorder Immediately - At Risk"", ""OK"")","","Buyer alert; legacy JDBC jdbc:databricks://adb-1234567890123456.7.azuredatabricks.net:443/default;PWD=SuperSecretPass123!",FALSE,Alerts,msr-303
+304,10,Sales,Prior Year Net Revenue,"CALCULATE(SUM('Sales'[net_amount_usd]), SAMEPERIODLASTYEAR('Sales'[invoice_date]))","$#,0","Backward-looking YoY revenue",FALSE,Revenue,msr-304
+305,10,Sales,Trailing 12M Lost Margin USD,"CALCULATE(SUM('Sales'[lost_margin_usd]), DATEADD('Sales'[invoice_date], -1, YEAR))","$#,0","Backward-looking 12M lost margin",FALSE,Revenue,msr-305
+306,20,Inventory,Days of Supply,"DIVIDE(SUM('Inventory'[on_hand_qty]), SUM('Inventory'[trailing_30d_daily_demand]), 0)","0.0","Inventory days of coverage",FALSE,Core,msr-306

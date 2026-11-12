@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "poopdeck"
+version = "0.1.0"
+description = "Portable, corporate-safe Discovery, Valuation, and Portfolio Operating System for a solo Data Scientist."
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = [
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "fastapi>=0.100",
+    "uvicorn>=0.20",
+    "click>=8.1",
+    "httpx>=0.24",
+]
+
+[project.optional-dependencies]
+databricks = ["databricks-sdk>=0.20"]
+dev = ["pytest>=8.0", "pytest-mock>=3.10"]
+
+[project.scripts]
+poopdeck = "poopdeck.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["poopdeck*"]
+
+[tool.setuptools.package-data]
+poopdeck = [
+    "packs/*.yaml",
+    "packs/*.yml",
+    "packs/*.json",
+    "ui/static/*",
+    "ui/static/**/*",
+]
+"poopdeck.packs" = ["*.yaml", "*.yml", "*.json"]
+"poopdeck.ui" = ["static/*", "static/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"

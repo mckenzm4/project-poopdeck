@@ -1,0 +1,7 @@
+relationship rel_sales_inventory_sku
+	fromColumn: Sales.sku_id
+	toColumn: Inventory.sku_id
+	crossFilteringBehavior: oneDirection
+	fromCardinality: many
+	toCardinality: one
+	isActive: true

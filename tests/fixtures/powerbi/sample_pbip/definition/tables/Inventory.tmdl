@@ -1,0 +1,45 @@
+table Inventory
+
+	measure 'Days of Supply' = DIVIDE(SUM('Inventory'[on_hand_qty]), SUM('Inventory'[trailing_30d_daily_demand]), 0)
+		formatString: 0.0
+
+	measure 'Fill Rate Pct' = DIVIDE(SUM('Sales'[order_qty]) - COUNTBLANK('Inventory'[on_hand_qty]), SUM('Sales'[order_qty]), 1)
+		formatString: 0.0%
+
+	measure 'SKU Stockout Risk Tier' = SWITCH(TRUE(), [Days of Supply] < 7, IF(SUM('Inventory'[on_hand_qty]) <= 0, "P0 Stockout", IF(AVERAGE('Inventory'[actual_lead_time_days]) > 21, "P1 Critical", "P2 Expedite")), [Days of Supply] < 14, "P2 Watchlist", "Healthy")
+
+	/// Buyer alert rule; warehouse PAT dapi0123456789abcdef0123456789abcdef
+	measure 'Static 14-Day Reorder Alert' = IF([Days of Supply] < 14 || [Fill Rate Pct] < 0.85, "ALERT: Reorder Immediately - At Risk", "OK")
+
+	column sku_id
+		dataType: string
+		sourceColumn: sku_id
+
+	column warehouse_id
+		dataType: string
+		sourceColumn: warehouse_id
+
+	column snapshot_date
+		dataType: dateTime
+		sourceColumn: snapshot_date
+
+	column on_hand_qty
+		dataType: double
+		sourceColumn: on_hand_qty
+
+	column trailing_30d_daily_demand
+		dataType: double
+		sourceColumn: trailing_30d_daily_demand
+
+	column actual_lead_time_days
+		dataType: double
+		sourceColumn: actual_lead_time_days
+
+	partition Inventory-Partition = m
+		mode: import
+		source =
+			let
+				Source = Databricks.Catalogs("adb-1234567890123456.7.azuredatabricks.net", "/sql/1.0/warehouses/ab12cd34ef56", [Catalog="prod_catalog", Database="silver"]),
+				Result = Value.NativeQuery(Source, "SELECT i.*, p.actual_lead_time_days FROM prod_catalog.silver.inventory_snapshots i LEFT JOIN prod_catalog.gold.po_receipts p ON i.sku_id = p.sku_id")
+			in
+				Result

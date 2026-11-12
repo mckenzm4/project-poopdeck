@@ -1,0 +1,124 @@
+{
+  "name": "Daily Buyer Workbench",
+  "compatibilityLevel": 1567,
+  "annotations": [
+    {"name": "PoopdeckWorkspace", "value": "Supply Chain Workspace"},
+    {"name": "PoopdeckOwner", "value": "Sarah Chen"}
+  ],
+  "model": {
+    "culture": "en-US",
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "tables": [
+      {
+        "name": "Sales",
+        "columns": [
+          {"name": "invoice_id", "dataType": "string", "sourceColumn": "invoice_id"},
+          {"name": "sku_id", "dataType": "string", "sourceColumn": "sku_id"},
+          {"name": "invoice_date", "dataType": "dateTime", "sourceColumn": "invoice_date"},
+          {"name": "net_amount_usd", "dataType": "double", "sourceColumn": "net_amount_usd"},
+          {"name": "lost_margin_usd", "dataType": "double", "sourceColumn": "lost_margin_usd"},
+          {"name": "order_qty", "dataType": "int64", "sourceColumn": "order_qty"}
+        ],
+        "partitions": [
+          {
+            "name": "Sales-Partition",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    // Legacy JDBC: jdbc:databricks://adb-1234567890123456.7.azuredatabricks.net:443/default;PWD=SuperSecretPass123! token=dapi0123456789abcdef0123456789abcdef",
+                "    Source = Databricks.Catalogs(\"adb-1234567890123456.7.azuredatabricks.net\", \"/sql/1.0/warehouses/ab12cd34ef56\", [Catalog=\"prod_catalog\", Database=\"gold\"]),",
+                "    Result = Value.NativeQuery(Source, \"SELECT * FROM prod_catalog.gold.customer_invoices\")",
+                "in",
+                "    Result"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Naive 3M Moving Avg Demand Forecast",
+            "expression": "AVERAGEX(DATESINPERIOD('Sales'[invoice_date], MAX('Sales'[invoice_date]), -3, MONTH), CALCULATE(SUM('Sales'[order_qty])))",
+            "formatString": "#,0.0",
+            "description": "Hand-rolled 3-month trailing moving average used as buyer demand forecast"
+          },
+          {
+            "name": "Prior Year Net Revenue",
+            "expression": "CALCULATE(SUM('Sales'[net_amount_usd]), SAMEPERIODLASTYEAR('Sales'[invoice_date]))",
+            "formatString": "$#,0",
+            "description": "Backward-looking YoY revenue comparison"
+          },
+          {
+            "name": "Trailing 12M Lost Margin USD",
+            "expression": "CALCULATE(SUM('Sales'[lost_margin_usd]), DATEADD('Sales'[invoice_date], -1, YEAR))",
+            "formatString": "$#,0",
+            "description": "Backward-looking trailing 12-month short-ship margin loss"
+          }
+        ]
+      },
+      {
+        "name": "Inventory",
+        "columns": [
+          {"name": "sku_id", "dataType": "string", "sourceColumn": "sku_id"},
+          {"name": "warehouse_id", "dataType": "string", "sourceColumn": "warehouse_id"},
+          {"name": "snapshot_date", "dataType": "dateTime", "sourceColumn": "snapshot_date"},
+          {"name": "on_hand_qty", "dataType": "double", "sourceColumn": "on_hand_qty"},
+          {"name": "trailing_30d_daily_demand", "dataType": "double", "sourceColumn": "trailing_30d_daily_demand"},
+          {"name": "actual_lead_time_days", "dataType": "double", "sourceColumn": "actual_lead_time_days"}
+        ],
+        "partitions": [
+          {
+            "name": "Inventory-Partition",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Databricks.Catalogs(\"adb-1234567890123456.7.azuredatabricks.net\", \"/sql/1.0/warehouses/ab12cd34ef56\", [Catalog=\"prod_catalog\", Database=\"silver\"]),",
+                "    Result = Value.NativeQuery(Source, \"SELECT i.*, p.actual_lead_time_days FROM prod_catalog.silver.inventory_snapshots i LEFT JOIN prod_catalog.gold.po_receipts p ON i.sku_id = p.sku_id\")",
+                "in",
+                "    Result"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Days of Supply",
+            "expression": "DIVIDE(SUM('Inventory'[on_hand_qty]), SUM('Inventory'[trailing_30d_daily_demand]), 0)",
+            "formatString": "0.0",
+            "description": "Current inventory coverage in days"
+          },
+          {
+            "name": "Fill Rate Pct",
+            "expression": "DIVIDE(SUM('Sales'[order_qty]) - COUNTBLANK('Inventory'[on_hand_qty]), SUM('Sales'[order_qty]), 1)",
+            "formatString": "0.0%",
+            "description": "Estimated SKU fill rate"
+          },
+          {
+            "name": "SKU Stockout Risk Tier",
+            "expression": "SWITCH(TRUE(), [Days of Supply] < 7, IF(SUM('Inventory'[on_hand_qty]) <= 0, \"P0 Stockout\", IF(AVERAGE('Inventory'[actual_lead_time_days]) > 21, \"P1 Critical\", \"P2 Expedite\")), [Days of Supply] < 14, \"P2 Watchlist\", \"Healthy\")",
+            "description": "Nested heuristic risk tiering replacing probabilistic safety-stock model"
+          },
+          {
+            "name": "Static 14-Day Reorder Alert",
+            "expression": "IF([Days of Supply] < 14 || [Fill Rate Pct] < 0.85, \"ALERT: Reorder Immediately - At Risk\", \"OK\")",
+            "description": "Buyer alert rule; warehouse PAT dapi0123456789abcdef0123456789abcdef"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "rel_sales_inventory_sku",
+        "fromTable": "Sales",
+        "fromColumn": "sku_id",
+        "toTable": "Inventory",
+        "toColumn": "sku_id",
+        "crossFilteringBehavior": "oneDirection",
+        "isActive": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+# === Project Poopdeck Corporate DLP Boundary (R1 / F02) ===
+vault/
+!examples/demo_vault/
+!examples/demo_vault/**
+.env
+.env.*
+!.env.example
+*.pbix
+*.vpax
+exports/
+config.yaml
+!config.example.yaml
+
+# === Multi-Agent Orchestration & Internal Planning Specs ===
+.agents/
+PROJECT.md
+TEST_INFRA.md
+TEST_READY.md
+
+# === Python Packaging, Bytecode & Test Caches ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+*.egg
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+.venv/
+venv/
+
